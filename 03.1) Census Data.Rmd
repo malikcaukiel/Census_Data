@@ -1,0 +1,141 @@
+---
+title: "Census Data"
+#output: html_notebook
+---
+
+```{r message=FALSE, warning=FALSE, error=TRUE}
+# loading libraries
+library(readr)
+library(dplyr)
+library(tidyr)
+```
+
+```{r message=FALSE, warning=FALSE, error=TRUE}
+# loading CSV
+files <- list.files(pattern='states_.*csv')
+df_list <- lapply(files, read_csv)
+us_census <- bind_rows(df_list)
+```
+
+```{r error=TRUE}
+# inspecting data
+#print(colnames(us_census))
+#str(us_census)
+head(us_census, 10)
+
+```
+
+```{r error=TRUE}
+# dropping X1 column
+us_census <- us_census %>%
+                  select(-X1)
+head(us_census)
+
+```
+
+```{r error=TRUE}
+# removing % from race columns
+
+us_census <- us_census %>%
+                  mutate(Hispanic=gsub('\\%', '', Hispanic),
+                         White=gsub('\\%', '', White),
+                         Black=gsub('\\%', '', Black),
+                         Native=gsub('\\%', '', Native),
+                         Asian=gsub('\\%', '', Asian),
+                         Pacific=gsub('\\%', '', Pacific)
+                         )
+head(us_census)                  
+
+```
+
+```{r error=TRUE}
+# removing $ from Income column
+us_census <- us_census %>%
+                 mutate(Income=gsub('\\$',"", Income))
+                 
+head(us_census)
+
+```
+
+```{r error=TRUE}
+# separating GenderPop column
+us_census <- us_census %>%
+                separate(GenderPop, c('male_pop','female_pop'), '_')
+head(us_census)
+
+```
+
+```{r error=TRUE}
+# cleaning male and female population columns
+us_census <- us_census %>%
+                mutate(male_pop = gsub('M', '', male_pop),
+                       female_pop = gsub('F', '', female_pop)
+                       )
+head(us_census)
+
+```
+
+```{r error=TRUE}
+# updating column data types
+
+us_census <- us_census %>%
+                 mutate(Hispanic = as.numeric(Hispanic),
+                        White =as.numeric(White),
+                        Black = as.numeric(Black),
+                        Native = as.numeric(Native),
+                        Asian = as.numeric(Asian),
+                        Pacific = as.numeric(Pacific),
+                        Income = as.numeric(Income),
+                        male_pop = as.numeric(male_pop),
+                        female_pop = as.numeric(female_pop)
+                         )
+#head(us_census)
+str(us_census)
+
+```
+
+```{r error=TRUE}
+# updating values of race columns
+
+us_census <- us_census %>%
+                mutate(Hispanic/100,
+                       White/100,
+                       Black/100,
+                       Native/100,
+                       Asian/100,
+                       Pacific/100,
+                       Income/100,
+                       male_pop/100,
+                       female_pop/100)
+head(us_census)
+```
+
+```{r error=TRUE}
+# checking for duplicate rows
+
+us_census %>%
+   duplicated() %>%
+   table()
+  
+```
+
+```{r error=TRUE}
+# removing duplicate rows
+
+us_census <- us_census %>%
+                 distinct()
+                 
+```
+
+```{r error=TRUE}
+# checking for duplicate rows
+us_census %>%
+   duplicated() %>%
+   table()
+
+```
+
+```{r error=TRUE}
+# clean data frame
+View(us_census)
+```
